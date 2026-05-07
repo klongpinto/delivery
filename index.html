@@ -446,22 +446,32 @@
         printWindow.document.close();
     }
 
-    function toggleHistory() {
-        const modal = document.getElementById('history-modal');
-        const list = document.getElementById('history-list');
-        if (modal.classList.contains('hidden')) {
+    async function toggleHistory() {
+    const modal = document.getElementById('history-modal');
+    const list = document.getElementById('history-list');
+    
+    if (modal.classList.contains('hidden')) {
+        modal.classList.remove('hidden');
+        list.innerHTML = `<div class="text-center py-10 text-[#A68966]">กำลังโหลดประวัติจากเซิร์ฟเวอร์...</div>`;
+
+        try {
+            // ดึงข้อมูลผ่าน doGet ของ Google Script
+            const response = await fetch(GOOGLE_SCRIPT_URL);
+            const cloudHistory = await response.json();
+            
+            // อัปเดตข้อมูลในเครื่องให้ตรงกับเซิร์ฟเวอร์
+            history = cloudHistory; 
+
             list.innerHTML = '';
             if (history.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-24 opacity-30 flex flex-col items-center">
-                        <div class="text-6xl mb-4">📝</div>
-                        <p class="font-bold text-lg">ยังไม่มีประวัติการขาย</p>
-                    </div>`;
+                list.innerHTML = `<div class="text-center py-20 opacity-30">ยังไม่มีประวัติการขาย</div>`;
+                return;
             }
+
             history.forEach((order, index) => {
                 const item = document.createElement('div');
-                item.className = 'p-6 bg-[#FAF7F2] rounded-[32px] flex justify-between items-center animate-slide border border-[#efe3d5]/30 hover:border-[#D2B48C] transition-all';
-                item.style.animationDelay = `${index * 50}ms`;
+                item.className = 'p-6 bg-[#FAF7F2] rounded-[32px] flex justify-between items-center animate-slide border border-[#efe3d5]/30 hover:border-[#D2B48C] transition-all mb-4';
+                item.style.animationDelay = `${index * 30}ms`;
                 item.innerHTML = `
                     <div class="flex-1">
                         <div class="flex items-center gap-2 mb-1">
@@ -470,17 +480,19 @@
                         </div>
                         <p class="text-[11px] text-[#A68966] font-medium ml-4">${order.date}</p>
                         <p class="text-xl font-black text-[#8B4513] mt-2 ml-4">฿${order.total.toLocaleString()}</p>
+                        <p class="text-[10px] text-[#A68966] ml-4">ลูกค้า: ${order.customer.name}</p>
                     </div>
-                    <button onclick="reprint(${index})" class="px-6 py-2.5 bg-white text-[#8B4513] border border-[#efe3d5] rounded-2xl text-xs font-black shadow-sm hover:bg-[#8B4513] hover:text-white hover:border-[#8B4513] transition-all uppercase tracking-tighter">พิมพ์ซ้ำ</button>
+                    <button onclick="reprint(${index})" class="px-6 py-2.5 bg-white text-[#8B4513] border border-[#efe3d5] rounded-2xl text-xs font-black shadow-sm hover:bg-[#8B4513] hover:text-white transition-all">พิมพ์ซ้ำ</button>
                 `;
                 list.appendChild(item);
             });
-            modal.classList.remove('hidden');
-        } else {
-            modal.classList.add('hidden');
+        } catch (error) {
+            list.innerHTML = '<div class="text-center py-10 text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
         }
+    } else {
+        modal.classList.add('hidden');
     }
-
+}
     function reprint(index) { printOrder(history[index]); }
     
     function openMobileSummary() {
