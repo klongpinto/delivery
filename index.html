@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KlongPinTo POS </title>
+    <!-- เพิ่ม Favicon ไอคอนบนแท็บเบราว์เซอร์ -->
+    <link rel="icon" type="image/png" href="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8B4513; /* Saddle Brown */
+            --secondary: #D2B48C; /* Tan */
+            --accent: #634832; /* Coffee */
+            --bg-cream: #FAF7F2; /* Cream White */
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-cream);
+            color: #433422;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #receipt-content { display: none; }
+
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #e2d1bc; border-radius: 10px; }
+
+        /* Animation Keyframes */
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideRight {
+            0% { transform: translateX(20px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .animate-slide { animation: slideRight 0.3s ease-out; }
+
+        .menu-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #efe3d5;
+        }
+        .menu-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(139, 69, 19, 0.1);
+            background-color: white;
+            border-color: var(--secondary);
+        }
+
+        .btn-main {
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #8B4513 0%, #634832 100%);
+        }
+        .btn-main:active { transform: scale(0.96); }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: all 0.2s;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .qty-btn:hover { background-color: var(--primary); color: white; }
+
+        .loading-spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid #fff;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+
+<div id="app" class="flex h-full max-w-[1600px] mx-auto bg-white overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.05)]">
+    
+    <!-- Left: Menu Section -->
+    <div class="flex-1 flex flex-col h-full bg-[#FAF7F2] border-r border-[#efe3d5]">
+        <!-- Header -->
+        <header class="p-4 md:p-6 flex justify-between items-center bg-white border-b border-[#efe3d5] sticky top-0 z-10">
+            <div class="flex items-center gap-5">
+                <!-- โลโก้แบบขยายขนาดและไม่มีพื้นหลัง -->
+                <div class="flex items-center justify-center">
+                    <img src="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png" alt="Logo" class="h-16 md:h-20 w-auto object-contain transition-transform hover:scale-105 duration-300">
+                </div>
+                <div>
+                    <h1 class="font-bold text-2xl text-[#634832] tracking-tight leading-tight">กล่องปินโต</h1>
+                    <p class="text-xs text-[#A68966] uppercase font-bold tracking-[0.15em]">KLONGPINTO SYSTEMS</p>
+                </div>
+            </div>
+            <button onclick="toggleHistory()" class="group flex items-center gap-2 px-5 py-2.5 bg-[#FAF7F2] border border-[#efe3d5] text-[#8B4513] rounded-2xl hover:bg-[#8B4513] hover:text-white transition-all duration-300 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-sm font-bold uppercase tracking-wide">ประวัติการขาย</span>
+            </button>
+        </header>
+
+        <!-- Menu Grid -->
+        <main class="flex-1 overflow-y-auto p-6 md:p-8 custom-scroll">
+            <div class="mb-8 flex items-end justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-[#433422] mb-1">เมนูอาหารวันนี้</h2>
+                    <div class="h-1.5 w-16 bg-[#8B4513] rounded-full"></div>
+                </div>
+                <p class="text-sm text-[#A68966] font-medium" id="menu-stats">พร้อมเสิร์ฟ 10 รายการ</p>
+            </div>
+            <div id="menu-grid" class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Items populated by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Right: Sidebar Order -->
+    <aside class="w-[380px] lg:w-[440px] hidden md:flex flex-col h-full bg-white relative shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+        <div class="p-8 border-b border-[#FAF7F2]">
+            <h2 class="text-2xl font-bold flex items-center gap-3 text-[#433422]">
+                <span class="p-2.5 bg-[#FAF7F2] rounded-2xl shadow-inner">🛒</span>
+                รายการที่สั่ง
+            </h2>
+        </div>
+
+        <div id="sidebar-order-items" class="flex-1 overflow-y-auto p-6 space-y-4 custom-scroll bg-white">
+            <div id="empty-state" class="h-full flex flex-col items-center justify-center text-[#D2B48C]">
+                <div class="w-28 h-28 bg-[#FAF7F2] rounded-full flex items-center justify-center mb-6 text-5xl animate-bounce duration-[2000ms]">🥡</div>
+                <p class="font-bold text-lg">ตะกร้ายังว่างอยู่</p>
+                <p class="text-sm opacity-60 text-center mt-1">เลือกรายการอาหารแสนอร่อย<br>จากเมนูด้านซ้ายได้เลยครับ</p>
+            </div>
+        </div>
+
+        <!-- Checkout Section -->
+        <div class="p-8 bg-[#FAF7F2] border-t border-[#efe3d5] rounded-t-[48px] shadow-[0_-15px_40px_rgba(0,0,0,0.03)]">
+            <div class="space-y-4 mb-8">
+                <div class="flex justify-between text-[#A68966] font-bold text-sm uppercase tracking-widest">
+                    <span>จำนวนรายการ</span>
+                    <span id="side-total-qty" class="bg-white px-4 py-1 rounded-full shadow-sm text-[#8B4513]">0</span>
+                </div>
+                <div class="flex justify-between items-center border-t border-[#efe3d5] pt-4">
+                    <span class="text-[#433422] font-bold text-xl uppercase tracking-tighter">ยอดสุทธิ</span>
+                    <span id="side-total-price" class="text-3xl font-black text-[#8B4513]">฿0.00</span>
+                </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="space-y-4 mb-8">
+                <div class="group relative">
+                    <input type="text" id="cust-name" placeholder="ชื่อลูกค้า" class="w-full p-4 pl-12 bg-white border border-[#efe3d5] rounded-[24px] focus:ring-2 focus:ring-[#8B4513] outline-none text-sm transition-all shadow-sm group-hover:border-[#D2B48C]">
+                    <span class="absolute left-4 top-4 opacity-40 text-lg">👤</span>
+                </div>
+                <div class="group relative">
+                    <input type="tel" id="cust-phone" placeholder="เบอร์โทรศัพท์" class="w-full p-4 pl-12 bg-white border border-[#efe3d5] rounded-[24px] focus:ring-2 focus:ring-[#8B4513] outline-none text-sm transition-all shadow-sm group-hover:border-[#D2B48C]">
+                    <span class="absolute left-4 top-4 opacity-40 text-lg">📞</span>
+                </div>
+                <textarea id="cust-address" rows="2" placeholder="ที่อยู่จัดส่งโดยละเอียด" class="w-full p-4 bg-white border border-[#efe3d5] rounded-[24px] focus:ring-2 focus:ring-[#8B4513] outline-none text-sm transition-all shadow-sm resize-none group-hover:border-[#D2B48C]"></textarea>
+            </div>
+
+            <button onclick="checkout()" id="checkout-btn" class="btn-main w-full text-white py-5 rounded-[28px] font-bold text-xl shadow-xl shadow-brown-200 flex justify-center items-center gap-3 hover:brightness-110 transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>บันทึกและพิมพ์บิล</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Navigation -->
+    <div id="cart-bar" class="md:hidden fixed bottom-8 left-6 right-6 z-30 transition-all duration-500 translate-y-32 opacity-0">
+        <button onclick="openMobileSummary()" class="w-full btn-main text-white p-5 rounded-[32px] shadow-2xl flex justify-between items-center ring-4 ring-white/20">
+            <div class="flex items-center gap-4">
+                <div class="bg-white/30 px-3 py-1 rounded-xl text-sm font-black" id="cart-count">0</div>
+                <span class="font-bold tracking-wider text-sm">ดูสรุปรายการ</span>
+            </div>
+            <span class="text-2xl font-black" id="cart-total">฿0.00</span>
+        </button>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div id="history-modal" class="fixed inset-0 z-[60] bg-[#433422]/70 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-[48px] p-8 md:p-10 max-h-[85vh] flex flex-col shadow-2xl animate-pop overflow-hidden">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-[#433422]">ประวัติการขาย</h2>
+                <p class="text-xs text-[#A68966] font-medium">รายการล่าสุด 50 อันดับแรก</p>
+            </div>
+            <button onclick="toggleHistory()" class="w-12 h-12 bg-[#FAF7F2] rounded-full flex items-center justify-center text-[#8B4513] hover:rotate-90 hover:bg-[#8B4513] hover:text-white transition-all duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+        </div>
+        <div id="history-list" class="flex-1 overflow-y-auto space-y-4 custom-scroll pr-2"></div>
+    </div>
+</div>
+
+<script>
+    const menuItems = [
+        { id: 1, name: 'สปาเกตตี้ผัดขี้เมาทะเล', price: 60, image: 'https://img1.pic.in.th/images/S__33742859_0.jpg' },
+        { id: 2, name: 'ข้าวหน้าหมูเกาหลี', price: 60, image: 'https://img2.pic.in.th/S__33742857_0.jpg' },
+        { id: 3, name: 'ข้าวหมึกผัดผงกระหรี่', price: 60, image: 'https://img1.pic.in.th/images/S__33742858_0.jpg' },
+       
+    ];
+
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzirdC2LdKSh6k5G3XvBMbiMHCUdN-6-7_IdYWQur8IvMqmRBHj43DIkq_faeLb9rAI/exec';
+
+    let cart = [];
+    let history = JSON.parse(localStorage.getItem('klongPintoHistory')) || [];
+
+    function init() {
+        const grid = document.getElementById('menu-grid');
+        grid.innerHTML = '';
+        menuItems.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = `menu-card bg-white rounded-[28px] flex flex-col cursor-pointer animate-pop`;
+            card.style.animationDelay = `${index * 50}ms`;
+            card.onclick = () => addToCart(item);
+            
+            // ใช้โครงสร้างที่มี Image Container
+            card.innerHTML = `
+                <div class="menu-image-container">
+                    <img src="${item.image}" alt="${item.name}" class="menu-image" onerror="this.onerror=null; this.src='https://placehold.co/400x300?text=No+Image';">
+                </div>
+                <div class="p-4 flex flex-col flex-1">
+                    <h3 class="font-bold text-[#433422] text-sm mb-1 line-clamp-1">${item.name}</h3>
+                    <p class="text-[#8B4513] font-black">฿${item.price.toLocaleString()}</p>
+                    <div class="mt-3 py-2 bg-[#FAF7F2] text-[#A68966] text-[10px] font-bold text-center rounded-xl uppercase tracking-widest border border-[#efe3d5]">เพิ่มรายการ</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+        updateCartUI();
+    }
+
+    function addToCart(item) {
+        const existing = cart.find(i => i.id === item.id);
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            cart.push({ ...item, qty: 1 });
+        }
+        updateCartUI();
+    }
+
+    function updateQty(id, delta) {
+        const item = cart.find(i => i.id === id);
+        if (item) {
+            item.qty += delta;
+            if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+        }
+        updateCartUI();
+    }
+
+    function updateCartUI() {
+        const count = cart.reduce((sum, i) => sum + i.qty, 0);
+        const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        
+        // Update Mobile Bar
+        const cartBar = document.getElementById('cart-bar');
+        if (count > 0) {
+            cartBar.style.transform = 'translateY(0)';
+            cartBar.style.opacity = '1';
+        } else {
+            cartBar.style.transform = 'translateY(32px)';
+            cartBar.style.opacity = '0';
+        }
+        document.getElementById('cart-count').innerText = count;
+        document.getElementById('cart-total').innerText = `฿${total.toLocaleString()}`;
+
+        // Update Sidebar
+        document.getElementById('side-total-qty').innerText = count;
+        document.getElementById('side-total-price').innerText = `฿${total.toLocaleString()}`;
+
+        renderSidebarItems();
+    }
+
+    function renderSidebarItems() {
+        const container = document.getElementById('sidebar-order-items');
+        const emptyState = document.getElementById('empty-state');
+        
+        if (cart.length === 0) {
+            emptyState.style.display = 'flex';
+            container.querySelectorAll('.cart-row').forEach(el => el.remove());
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        container.querySelectorAll('.cart-row').forEach(el => el.remove());
+
+        cart.forEach((item, idx) => {
+            const row = document.createElement('div');
+            row.className = 'cart-row flex justify-between items-center bg-[#FAF7F2] p-5 rounded-[28px] animate-slide border border-[#efe3d5]/50';
+            row.style.animationDelay = `${idx * 40}ms`;
+            row.innerHTML = `
+                <div class="flex-1 pr-2">
+                    <h4 class="font-bold text-[#433422] text-sm leading-tight">${item.name}</h4>
+                    <p class="text-[11px] text-[#A68966] mt-1 font-medium">฿${item.price.toLocaleString()} บาท</p>
+                </div>
+                <div class="flex items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-[#efe3d5]">
+                    <button onclick="updateQty(${item.id}, -1)" class="qty-btn text-[#A68966] hover:text-red-500">-</button>
+                    <span class="w-6 text-center font-black text-sm text-[#433422]">${item.qty}</span>
+                    <button onclick="updateQty(${item.id}, 1)" class="qty-btn text-[#8B4513]">+</button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    async function checkout() {
+        const name = document.getElementById('cust-name').value.trim();
+        const phone = document.getElementById('cust-phone').value.trim();
+        const address = document.getElementById('cust-address').value.trim();
+        const btn = document.getElementById('checkout-btn');
+
+        if (cart.length === 0) {
+            alert('ตะกร้าว่างเปล่า! กรุณาเลือกรายการอาหารแสนอร่อยก่อนครับ');
+            return;
+        }
+
+        if (!name || !phone || !address) {
+            alert('กรุณากรอกข้อมูลลูกค้าเพื่อความถูกต้องในการจัดส่งและออกบิลครับ');
+            return;
+        }
+
+        const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+        const orderId = 'KPT-' + Date.now().toString(36).toUpperCase().substr(-5);
+        const orderDate = new Date().toLocaleString('th-TH');
+
+        const orderData = { orderId, date: orderDate, customer: { name, phone, address }, items: [...cart], total };
+
+        btn.disabled = true;
+        btn.innerHTML = '<div class="loading-spinner"></div> <span>กำลังบันทึกข้อมูล...</span>';
+
+        try {
+            history.unshift(orderData);
+            localStorage.setItem('klongPintoHistory', JSON.stringify(history.slice(0, 50)));
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            printOrder(orderData);
+
+            cart = [];
+            updateCartUI();
+            document.getElementById('cust-name').value = '';
+            document.getElementById('cust-phone').value = '';
+            document.getElementById('cust-address').value = '';
+            btn.disabled = false;
+            btn.innerHTML = '<span>บันทึกและพิมพ์บิล</span>';
+
+        } catch (error) {
+            alert('เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้งครับ');
+            btn.disabled = false;
+            btn.innerHTML = '<span>บันทึกและพิมพ์บิล</span>';
+        }
+    }
+
+    function printOrder(order) {
+        let itemsHtml = '';
+        order.items.forEach(item => {
+            itemsHtml += `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px;">
+                    <span style="flex: 1;">${item.name} x ${item.qty}</span>
+                    <span style="font-weight: bold;">${(item.price * item.qty).toLocaleString()}</span>
+                </div>`;
+        });
+
+        const printWindow = window.open('', '_blank', 'width=300,height=600');
+        if (!printWindow) {
+            alert("กรุณาเปิด Pop-up เพื่อพิมพ์บิลใบเสร็จครับ");
+            return;
+        }
+        printWindow.document.write(`
+            <html>
+            <head>
+                <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+                <style>
+                    body { margin: 0; padding: 0; font-family: 'Kanit', sans-serif; color: #433422; background: white; }
+                    @page { size: 58mm auto; margin: 0; }
+                    .container { width: 52mm; padding: 3mm; box-sizing: border-box; }
+                    .header { text-align: center; border-bottom: 1.5px dashed #433422; padding-bottom: 6px; margin-bottom: 6px; }
+                    .divider { border-top: 1.5px dashed #433422; margin: 6px 0; }
+                    .title { font-weight: 500; font-size: 15px; margin: 5px 0 0; }
+                </style>
+            </head>
+            <body onload="setTimeout(function(){ window.print(); window.close(); }, 600);">
+                <div class="container">
+                    <div class="header">
+                        <img src="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png" style="width: 32mm; filter: grayscale(100%);">
+                        <div class="title">กล่องปินโต</div>
+                        <p style="font-size: 9px; margin: 2px 0;">309 ม.1 ต.นาเหล่า อ.นาวัง จ.หนองบัวลำภู<br>โทร: 088-550-5414</p>
+                    </div>
+                    <p style="font-size: 10px; margin: 2px 0; font-weight: bold;">เลขที่: ${order.orderId}</p>
+                    <p style="font-size: 9px; margin: 2px 0;">วันที่: ${order.date}</p>
+                    <div class="divider"></div>
+                    ${itemsHtml}
+                    <div class="divider"></div>
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; margin: 6px 0;">
+                        <span>ยอดรวมทั้งสิ้น:</span>
+                        <span>฿${order.total.toLocaleString()}</span>
+                    </div>
+                    <div class="divider"></div>
+                    <div style="font-size: 10px; margin-top: 6px; line-height: 1.4;">
+                        <b>คุณลูกค้า:</b> ${order.customer.name}<br>
+                        <b>โทร:</b> ${order.customer.phone}<br>
+                        <b>จัดส่ง:</b> ${order.customer.address}
+                    </div>
+                    <div style="text-align: center; margin-top: 20px; font-size: 9px; border-top: 1px solid #eee; padding-top: 8px;">
+                        ขอบคุณที่อุดหนุนครับ <br><b>กล่องปินโต - KLONGPINTO</b>
+                    </div>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    function toggleHistory() {
+        const modal = document.getElementById('history-modal');
+        const list = document.getElementById('history-list');
+        if (modal.classList.contains('hidden')) {
+            list.innerHTML = '';
+            if (history.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-24 opacity-30 flex flex-col items-center">
+                        <div class="text-6xl mb-4">📝</div>
+                        <p class="font-bold text-lg">ยังไม่มีประวัติการขาย</p>
+                    </div>`;
+            }
+            history.forEach((order, index) => {
+                const item = document.createElement('div');
+                item.className = 'p-6 bg-[#FAF7F2] rounded-[32px] flex justify-between items-center animate-slide border border-[#efe3d5]/30 hover:border-[#D2B48C] transition-all';
+                item.style.animationDelay = `${index * 50}ms`;
+                item.innerHTML = `
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                            <span class="font-bold text-[#433422] text-lg leading-none">${order.orderId}</span>
+                        </div>
+                        <p class="text-[11px] text-[#A68966] font-medium ml-4">${order.date}</p>
+                        <p class="text-xl font-black text-[#8B4513] mt-2 ml-4">฿${order.total.toLocaleString()}</p>
+                    </div>
+                    <button onclick="reprint(${index})" class="px-6 py-2.5 bg-white text-[#8B4513] border border-[#efe3d5] rounded-2xl text-xs font-black shadow-sm hover:bg-[#8B4513] hover:text-white hover:border-[#8B4513] transition-all uppercase tracking-tighter">พิมพ์ซ้ำ</button>
+                `;
+                list.appendChild(item);
+            });
+            modal.classList.remove('hidden');
+        } else {
+            modal.classList.add('hidden');
+        }
+    }
+
+    function reprint(index) { printOrder(history[index]); }
+    
+    function openMobileSummary() {
+        alert("ยอดรวมรายการในตะกร้า: " + document.getElementById('cart-total').innerText);
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
