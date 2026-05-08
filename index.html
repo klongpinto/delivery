@@ -84,6 +84,16 @@
             height: 18px;
             animation: spin 1s linear infinite;
         }
+	.qr-box { 
+    		text-align: center; 
+    		margin-top: 5px; 
+    		padding: 3px; /* ลด padding ลงจาก 5px */
+    		border: 1px solid #ccc; 
+   		 border-radius: 5px;
+   		 width: fit-content; /* ให้กรอบหดเข้าหาขนาดรูป */
+    		margin-left: auto;
+    		margin-right: auto;
+}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -173,10 +183,6 @@
                 <span class="font-medium">เพิ่มไข่เจียว</span>
                 <span class="text-emerald-600 font-bold">+10 ฿</span>
             </button>
-	<button onclick="confirmAddToCart('ไข่ต้ม', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
-                <span class="font-medium">เพิ่มไข่ต้ม</span>
-                <span class="text-emerald-600 font-bold">+10 ฿</span>
-            </button>
         </div>
         
         <button onclick="closeOptionModal()" class="w-full mt-6 text-[#A68966] font-medium text-sm">ยกเลิก</button>
@@ -195,7 +201,7 @@
 
 <script>
     const menuItems = [
-        { id: 1, name: 'สปาเกตตี้ผัดขี้เมาทะเล', price: 60, image: 'https://img1.pic.in.th/images/S__33742859_0.jpg' },
+        { id: 1, name: 'สปาเกตตี้ผัดขี้เมาทะเล', price: 1, image: 'https://img1.pic.in.th/images/S__33742859_0.jpg' },
         { id: 2, name: 'ข้าวหน้าหมูเกาหลี', price: 60, image: 'https://img2.pic.in.th/S__33742857_0.jpg' },
         { id: 3, name: 'ข้าวหมึกผัดผงกระหรี่', price: 60, image: 'https://img1.pic.in.th/images/S__33742858_0.jpg' }
     ];
@@ -361,22 +367,30 @@
             btn.innerHTML = '<span>บันทึกและพิมพ์บิล</span>';
         }
     }
-
+function generatePromptPayQR(amount) {
+    // ใส่เลขบัตรประชาชน 13 หลักที่ผูกกับแอปถุงเงินตรงนี้ (ห้ามมีขีด)
+    const promptPayId = "1129901578415"; 
+    
+    // ใช้ API เพื่อสร้างรูปภาพ QR Code ที่มียอดเงินอัตโนมัติ
+    return `https://promptpay.io/${promptPayId}/${amount}.png`;
+}
     function printOrder(order) {
-        let itemsHtml = '';
-        order.items.forEach(item => {
-            itemsHtml += `
-                <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px;">
-                    <span style="flex: 1;">${item.name} x ${item.qty}</span>
-                    <span style="font-weight: bold;">${(item.price * item.qty).toLocaleString()}</span>
-                </div>`;
-        });
+    let itemsHtml = '';
+    order.items.forEach(item => {
+        itemsHtml += `
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 11px;">
+                <span style="flex: 1; padding-right: 4px;">${item.name} x${item.qty}</span>
+                <span style="font-weight: bold; white-space: nowrap;">${(item.price * item.qty).toLocaleString()}</span>
+            </div>`;
+    });
 
-        const printWindow = window.open('', '_blank', 'width=300,height=600');
-        if (!printWindow) {
-            alert("กรุณาเปิด Pop-up เพื่อพิมพ์บิลใบเสร็จครับ");
-            return;
-        }
+    const qrUrl = generatePromptPayQR(order.total);
+
+    const printWindow = window.open('', '_blank', 'width=300,height=600');
+    if (!printWindow) {
+        alert("กรุณาเปิด Pop-up เพื่อพิมพ์บิลครับ");
+        return;
+    }
         printWindow.document.write(`
             <html>
             <head>
@@ -388,6 +402,20 @@
                     .header { text-align: center; border-bottom: 1.5px dashed #433422; padding-bottom: 6px; margin-bottom: 6px; }
                     .divider { border-top: 1.5px dashed #433422; margin: 6px 0; }
                     .title { font-weight: 500; font-size: 15px; margin: 5px 0 0; }
+		    .qr-img { 
+                    width: 30mm;   /* แก้ขนาดตรงนี้ตามต้องการ */
+                    height: 30mm;  /* แก้ความสูงให้เท่ากับความกว้าง */
+                    margin: 2px auto; 
+                    display: block; }
+	            .qr-box { 
+    			text-align: center;      /* ทำให้ตัวหนังสือและ inline element อยู่ตรงกลาง */
+  			 margin-top: 5px; 
+    			padding: 5px; 
+    			border: 1px solid #ccc; 
+    			border-radius: 5px;
+    			width: 35mm;             /* กำหนดความกว้างให้สัมพันธ์กับรูป QR */
+    			margin-left: auto;       /* ดึงขอบซ้ายเข้าหาจุดกึ่งกลาง */
+   			margin-right: auto;  }
                 </style>
             </head>
             <body onload="setTimeout(function(){ window.print(); window.close(); }, 600);">
@@ -415,12 +443,17 @@
                         <span>ยอดรวมทั้งสิ้น:</span>
                         <span>฿${order.total.toLocaleString()}</span>
                     </div>
-                    <div class="divider"></div>
+		                        <div class="divider"></div>
                     <div style="font-size: 10px; margin-top: 6px; line-height: 1.4;">
                         <b>คุณลูกค้า:</b> ${order.customer.name}<br>
                         <b>โทร:</b> ${order.customer.phone}<br>
                         <b>จัดส่ง:</b> ${order.customer.address}
                     </div>
+		    <div class="qr-box">
+    			<div style="font-size: 11px; font-weight: bold;">ชื่อบัญชี : นายณภัทร ชิณศรี</div>
+    			<img src="${qrUrl}" class="qr-img">
+    			<div style="font-size: 15px; font-weight: bold;">฿${order.total.toLocaleString()}</div>
+		    </div>
                     <div style="text-align: center; margin-top: 20px; font-size: 9px; border-top: 1px solid #eee; padding-top: 8px;">
                         ขอบคุณที่อุดหนุนครับ <br><b>กล่องปินโต - KLONGPINTO</b>
                     </div>
