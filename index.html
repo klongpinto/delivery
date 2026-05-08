@@ -429,7 +429,11 @@
                             day: 'numeric', 
                             hour: '2-digit', 
                             minute: '2-digit', 
-                            second: '2-digit' 
+                            second: '2-digit',
+                            hour12: false
+                        }).replace(/(\d+)\/(\d+)\/(\d+)/, (match, d, m, y) => {
+                            // เช็คว่าถ้าปีมันเกิน 3000 ให้ลบออก 543 (แก้บั๊กปีซ้อน)
+                            return `${d}/${m}/${y > 3000 ? y - 543 : y}`;
                         })}
                     </p>
                     <div class="divider"></div>
