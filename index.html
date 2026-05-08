@@ -25,21 +25,7 @@
             color: #433422;
             -webkit-tap-highlight-color: transparent;
         }
-        .menu-image-container {
-            width: 100%;
-            height: 160px;
-            overflow: hidden;
-            border-radius: 24px 24px 0 0;
-        }
-        .menu-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s;
-        }
-        .menu-card:hover .menu-image {
-            transform: scale(1.1);
-        }
+
         #receipt-content { display: none; }
 
         .custom-scroll::-webkit-scrollbar { width: 5px; }
@@ -218,33 +204,7 @@
         </div>
     </div>
 </div>
-<div id="option-modal" class="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-[40px] p-8 animate-pop shadow-2xl">
-        <h3 id="modal-food-name" class="text-xl font-bold text-[#433422] mb-2 text-center">เลือกตัวเลือกเพิ่มเติม</h3>
-        <p id="modal-food-price" class="text-[#8B4513] font-bold text-center mb-6"></p>
-        
-        <div class="space-y-3">
-            <button onclick="confirmAddToCart('')" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
-                <span class="font-medium">ธรรมดา</span>
-                <span class="text-[#A68966]">+0 ฿</span>
-            </button>
-            <button onclick="confirmAddToCart('พิเศษ', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
-                <span class="font-medium">พิเศษ</span>
-                <span class="text-emerald-600 font-bold">+10 ฿</span>
-            </button>
-            <button onclick="confirmAddToCart('ไข่ดาว', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
-                <span class="font-medium">เพิ่มไข่ดาว</span>
-                <span class="text-emerald-600 font-bold">+10 ฿</span>
-            </button>
-            <button onclick="confirmAddToCart('ไข่เจียว', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
-                <span class="font-medium">เพิ่มไข่เจียว</span>
-                <span class="text-emerald-600 font-bold">+10 ฿</span>
-            </button>
-        </div>
-        
-        <button onclick="closeOptionModal()" class="w-full mt-6 text-[#A68966] font-medium text-sm">ยกเลิก</button>
-    </div>
-</div>
+
 <!-- History Modal -->
 <div id="history-modal" class="fixed inset-0 z-[60] bg-[#433422]/70 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-[48px] p-8 md:p-10 max-h-[85vh] flex flex-col shadow-2xl animate-pop overflow-hidden">
@@ -273,47 +233,7 @@
 
     let cart = [];
     let history = JSON.parse(localStorage.getItem('klongPintoHistory')) || [];
-    let selectedItemForModal = null; // ตัวแปรเก็บรายการที่กำลังเลือกทอปปิ้ง
 
-// ฟังก์ชันเปิดหน้าต่างเลือก Option
-function openOptionModal(item) {
-    selectedItemForModal = item;
-    document.getElementById('modal-food-name').innerText = item.name;
-    document.getElementById('modal-food-price').innerText = `ราคาเริ่มต้น ฿${item.price}`;
-    document.getElementById('option-modal').classList.remove('hidden');
-}
-
-// ฟังก์ชันปิดหน้าต่างเลือก Option
-function closeOptionModal() {
-    document.getElementById('option-modal').classList.add('hidden');
-    selectedItemForModal = null;
-}
-
-// ฟังก์ชันยืนยันการเพิ่มลงตะกร้าพร้อม Option
-function confirmAddToCart(optionName, extraPrice = 0) {
-    if (!selectedItemForModal) return;
-    
-    const finalName = optionName ? `${selectedItemForModal.name} (${optionName})` : selectedItemForModal.name;
-    const finalPrice = selectedItemForModal.price + extraPrice;
-    // สร้าง ID พิเศษเพื่อให้ "ธรรมดา" กับ "พิเศษ" แยกบรรทัดกันในตะกร้า
-    const uniqueId = `${selectedItemForModal.id}-${optionName}`;
-
-    const existing = cart.find(i => i.uniqueId === uniqueId);
-    if (existing) {
-        existing.qty += 1;
-    } else {
-        cart.push({ 
-            ...selectedItemForModal, 
-            uniqueId: uniqueId, 
-            name: finalName, 
-            price: finalPrice, 
-            qty: 1 
-        });
-    }
-    
-    closeOptionModal();
-    updateCartUI();
-}
     function init() {
         const grid = document.getElementById('menu-grid');
         grid.innerHTML = '';
@@ -340,14 +260,20 @@ function confirmAddToCart(optionName, extraPrice = 0) {
     }
 
     function addToCart(item) {
-        openOptionModal(item); // ให้ไปเปิดหน้าต่างเลือก ธรรมดา/พิเศษ แทน
+        const existing = cart.find(i => i.id === item.id);
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            cart.push({ ...item, qty: 1 });
+        }
+        updateCartUI();
     }
 
-    function updateQty(uniqueId, delta) {
-        const item = cart.find(i => i.uniqueId === uniqueId);
+    function updateQty(id, delta) {
+        const item = cart.find(i => i.id === id);
         if (item) {
             item.qty += delta;
-            if (item.qty <= 0) cart = cart.filter(i => i.uniqueId !== uniqueId);
+            if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
         }
         updateCartUI();
     }
@@ -398,9 +324,9 @@ function confirmAddToCart(optionName, extraPrice = 0) {
                     <p class="text-[11px] text-[#A68966] mt-1 font-medium">฿${item.price.toLocaleString()} บาท</p>
                 </div>
                 <div class="flex items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-[#efe3d5]">
-                    <button onclick="updateQty('${item.uniqueId}', -1)" class="qty-btn text-[#A68966] hover:text-red-500">-</button>
+                    <button onclick="updateQty(${item.id}, -1)" class="qty-btn text-[#A68966] hover:text-red-500">-</button>
                     <span class="w-6 text-center font-black text-sm text-[#433422]">${item.qty}</span>
-                    <button onclick="updateQty('${item.uniqueId}', 1)" class="qty-btn text-[#8B4513]">+</button>
+                    <button onclick="updateQty(${item.id}, 1)" class="qty-btn text-[#8B4513]">+</button>
                 </div>
             `;
             container.appendChild(row);
