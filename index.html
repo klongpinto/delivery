@@ -390,16 +390,10 @@
         let itemsHtml = '';
         order.items.forEach(item => {
             itemsHtml += `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; font-size: 12px; line-height: 1.4;">
-                    <span style="flex: 1; padding-right: 10px;">
-                    ${item.name} <br>
-                    <small style="color: #666;">${item.qty} x ${item.price.toLocaleString()}</small>
-                    </span>
-    
-                    <span style="font-weight: bold; min-width: 60px; text-align: right;">
-                        ${(item.price * item.qty).toLocaleString()}
-                    </span>
-                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px;">
+                    <span style="flex: 1;">${item.name} x ${item.qty}</span>
+                    <span style="font-weight: bold;">${(item.price * item.qty).toLocaleString()}</span>
+                </div>`;
         });
 
         const printWindow = window.open('', '_blank', 'width=300,height=600');
@@ -428,16 +422,7 @@
                         <p style="font-size: 9px; margin: 2px 0;">309 ม.1 ต.นาเหล่า อ.นาวัง จ.หนองบัวลำภู<br>โทร: 088-550-5414</p>
                     </div>
                     <p style="font-size: 10px; margin: 2px 0; font-weight: bold;">เลขที่: ${order.orderId}</p>
-                    <p style="font-size: 9px; margin: 2px 0;">
-                        วันที่: ${new Date(order.date).toLocaleString('th-TH', { 
-                            year: 'numeric', 
-                            month: 'numeric', 
-                            day: 'numeric', 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
-                            second: '2-digit' 
-                        })}
-                    </p>
+                    <p style="font-size: 9px; margin: 2px 0;">วันที่: ${order.date}</p>
                     <div class="divider"></div>
                     ${itemsHtml}
                     <div class="divider"></div>
