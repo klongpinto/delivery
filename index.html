@@ -259,7 +259,47 @@
 
     let cart = [];
     let history = JSON.parse(localStorage.getItem('klongPintoHistory')) || [];
+    let selectedItemForModal = null; // ตัวแปรเก็บรายการที่กำลังเลือกทอปปิ้ง
 
+// ฟังก์ชันเปิดหน้าต่างเลือก Option
+function openOptionModal(item) {
+    selectedItemForModal = item;
+    document.getElementById('modal-food-name').innerText = item.name;
+    document.getElementById('modal-food-price').innerText = `ราคาเริ่มต้น ฿${item.price}`;
+    document.getElementById('option-modal').classList.remove('hidden');
+}
+
+// ฟังก์ชันปิดหน้าต่างเลือก Option
+function closeOptionModal() {
+    document.getElementById('option-modal').classList.add('hidden');
+    selectedItemForModal = null;
+}
+
+// ฟังก์ชันยืนยันการเพิ่มลงตะกร้าพร้อม Option
+function confirmAddToCart(optionName, extraPrice = 0) {
+    if (!selectedItemForModal) return;
+    
+    const finalName = optionName ? `${selectedItemForModal.name} (${optionName})` : selectedItemForModal.name;
+    const finalPrice = selectedItemForModal.price + extraPrice;
+    // สร้าง ID พิเศษเพื่อให้ "ธรรมดา" กับ "พิเศษ" แยกบรรทัดกันในตะกร้า
+    const uniqueId = `${selectedItemForModal.id}-${optionName}`;
+
+    const existing = cart.find(i => i.uniqueId === uniqueId);
+    if (existing) {
+        existing.qty += 1;
+    } else {
+        cart.push({ 
+            ...selectedItemForModal, 
+            uniqueId: uniqueId, 
+            name: finalName, 
+            price: finalPrice, 
+            qty: 1 
+        });
+    }
+    
+    closeOptionModal();
+    updateCartUI();
+}
     function init() {
         const grid = document.getElementById('menu-grid');
         grid.innerHTML = '';
@@ -295,11 +335,11 @@
         updateCartUI();
     }
 
-    function updateQty(id, delta) {
-        const item = cart.find(i => i.id === id);
+    function updateQty(uniqueId, delta) {
+        const item = cart.find(i => i.uniqueId === uniqueId);
         if (item) {
             item.qty += delta;
-            if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+            if (item.qty <= 0) cart = cart.filter(i => i.uniqueId !== uniqueId);
         }
         updateCartUI();
     }
