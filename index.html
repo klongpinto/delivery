@@ -204,7 +204,33 @@
         </div>
     </div>
 </div>
-
+<div id="option-modal" class="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-[40px] p-8 animate-pop shadow-2xl">
+        <h3 id="modal-food-name" class="text-xl font-bold text-[#433422] mb-2 text-center">เลือกตัวเลือกเพิ่มเติม</h3>
+        <p id="modal-food-price" class="text-[#8B4513] font-bold text-center mb-6"></p>
+        
+        <div class="space-y-3">
+            <button onclick="confirmAddToCart('')" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
+                <span class="font-medium">ธรรมดา</span>
+                <span class="text-[#A68966]">+0 ฿</span>
+            </button>
+            <button onclick="confirmAddToCart('พิเศษ', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
+                <span class="font-medium">พิเศษ</span>
+                <span class="text-emerald-600 font-bold">+10 ฿</span>
+            </button>
+            <button onclick="confirmAddToCart('ไข่ดาว', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
+                <span class="font-medium">เพิ่มไข่ดาว</span>
+                <span class="text-emerald-600 font-bold">+10 ฿</span>
+            </button>
+            <button onclick="confirmAddToCart('ไข่เจียว', 10)" class="w-full p-4 text-left border-2 border-[#FAF7F2] hover:border-[#8B4513] rounded-2xl flex justify-between items-center transition-all group">
+                <span class="font-medium">เพิ่มไข่เจียว</span>
+                <span class="text-emerald-600 font-bold">+10 ฿</span>
+            </button>
+        </div>
+        
+        <button onclick="closeOptionModal()" class="w-full mt-6 text-[#A68966] font-medium text-sm">ยกเลิก</button>
+    </div>
+</div>
 <!-- History Modal -->
 <div id="history-modal" class="fixed inset-0 z-[60] bg-[#433422]/70 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-[48px] p-8 md:p-10 max-h-[85vh] flex flex-col shadow-2xl animate-pop overflow-hidden">
