@@ -118,7 +118,31 @@
                         </div>
                 </div>
             </div>
-	    
+	<div class="md:hidden fixed bottom-6 right-6 z-40">
+    <button onclick="toggleMobileOrder()" class="btn-main w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-2xl relative">
+        <span>🛒</span>
+        <span id="mobile-cart-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full border-2 border-white hidden">0</span>
+    </button>
+</div>
+
+<div id="mobile-order-drawer" class="fixed inset-0 z-[80] hidden transition-opacity duration-300 bg-black/50 backdrop-blur-sm">
+    <div id="mobile-drawer-content" class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[40px] max-h-[90vh] flex flex-col transition-transform duration-300 translate-y-full">
+        <div class="p-4 flex justify-center">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full" onclick="toggleMobileOrder()"></div>
+        </div>
+        
+        <div class="px-8 pb-4 flex justify-between items-center border-b border-gray-100">
+            <h2 class="text-xl font-bold text-[#433422]">สรุปรายการสั่งซื้อ</h2>
+            <button onclick="toggleMobileOrder()" class="text-gray-400 text-2xl">&times;</button>
+        </div>
+
+        <div id="mobile-cart-items" class="flex-1 overflow-y-auto p-6 custom-scroll">
+            </div>
+
+        <div id="mobile-checkout-form" class="p-6 bg-[#FAF7F2] rounded-t-[32px]">
+            </div>
+    </div>
+</div>
 
             <button onclick="toggleHistory()" class="flex items-center gap-2 px-5 py-2.5 bg-[#FAF7F2] border border-[#efe3d5] text-[#8B4513] rounded-2xl hover:bg-[#8B4513] hover:text-white transition-all shadow-sm">
                 <span class="text-sm font-bold">ประวัติการขาย</span>
@@ -294,13 +318,20 @@
     }
 
     function updateCartUI() {
-        const count = cart.reduce((sum, i) => sum + i.qty, 0);
-        const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        
-        document.getElementById('side-total-qty').innerText = count;
-        document.getElementById('side-total-price').innerText = `฿${total.toLocaleString()}`;
-        renderSidebarItems();
-    }
+    const count = cart.reduce((sum, i) => sum + i.qty, 0);
+    const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    
+    document.getElementById('side-total-qty').innerText = count;
+    document.getElementById('side-total-price').innerText = `฿${total.toLocaleString()}`;
+
+    // --- เพิ่มส่วนนี้สำหรับ Mobile Badge ---
+    const mobileBadge = document.getElementById('mobile-cart-count');
+    mobileBadge.innerText = count;
+    mobileBadge.classList.toggle('hidden', count === 0);
+    // ----------------------------------
+
+    renderSidebarItems();
+}
 
     function renderSidebarItems() {
         const container = document.getElementById('sidebar-order-items');
