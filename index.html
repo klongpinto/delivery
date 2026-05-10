@@ -360,7 +360,7 @@
         }
 
         const total = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-        cconst orderId = 'KPT-' + Date.now().toString(36).toUpperCase().substr(-5);
+        const orderId = 'KPT-' + Date.now().toString(36).toUpperCase().substr(-5);
         const orderDate = new Date().toISOString();
 
         const orderData = { orderId, date: orderDate, customer: { name, phone, address }, items: [...cart], total };
