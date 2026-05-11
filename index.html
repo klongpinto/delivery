@@ -424,11 +424,11 @@ function generatePromptPayQR(amount) {
             <head>
                 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
                 <style>
-                    body { margin: 0; padding: 0; font-family: 'Kanit', sans-serif; color: #433422; background: white; }
+                    body { margin: 0; padding: 0; font-family: 'Kanit', sans-serif; color: #000000; background: white; }
                     @page { size: 58mm auto; margin: 0; }
                     .container { width: 52mm; padding: 3mm; box-sizing: border-box; }
-                    .header { text-align: center; border-bottom: 1.5px dashed #433422; padding-bottom: 6px; margin-bottom: 6px; }
-                    .divider { border-top: 1.5px dashed #433422; margin: 6px 0; }
+                    .header { text-align: center; border-bottom: 1.5px dashed #000000; padding-bottom: 6px; margin-bottom: 6px; }
+                    .divider { border-top: 1.5px dashed #000000; margin: 6px 0; }
                     .title { font-weight: 500; font-size: 15px; margin: 5px 0 0; }
 		    .qr-img { 
                     width: 30mm;   /* แก้ขนาดตรงนี้ตามต้องการ */
@@ -449,7 +449,7 @@ function generatePromptPayQR(amount) {
             <body onload="setTimeout(function(){ window.print(); window.close(); }, 600);">
                 <div class="container">
                     <div class="header">
-                        <img src="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png" style="width: 32mm; filter: grayscale(100%);">
+                        <img src="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png" style="width: 32mm; filter: grayscale(100%) contrast(200%);">
                         <div class="title">กล่องปินโต</div>
                         <p style="font-size: 9px; margin: 2px 0;">309 ม.1 ต.นาเหล่า อ.นาวัง จ.หนองบัวลำภู<br>โทร: 088-550-5414</p>
                     </div>
