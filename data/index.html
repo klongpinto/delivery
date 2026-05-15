@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบวิเคราะห์ข้อมูลร้านกล่องปินโต</title>
-    <!-- เพิ่ม Favicon ไอคอนบนแท็บเบราว์เซอร์ -->
     <link rel="icon" type="image/png" href="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -93,14 +92,12 @@
 </head>
 <body class="p-4 md:p-8 lg:p-12 relative">
     
-    <!-- ระบบแจ้งเตือนสถานะ -->
     <div class="system-status-mini flex items-center gap-2 px-3 py-1.5 bg-white/90 rounded-full border border-[#F5EDE3] shadow-md">
         <span id="status-indicator" class="status-dot bg-gray-300"></span>
         <span id="status-text" class="text-[10px] font-bold text-[#A1887F] tracking-wide uppercase">กำลังเตรียมระบบ</span>
     </div>
 
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
         <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-10 gap-6">
             <div class="flex items-center gap-4"> 
                 <img src="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png" alt="Logo" class="h-12 md:h-20 w-auto object-contain">
@@ -129,11 +126,10 @@
                 </div>
                 <button onclick="fetchData()" id="refresh-btn" class="p-3 btn-primary rounded-full shadow-lg" title="ดึงข้อมูลใหม่">
                     <svg id="refresh-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
-                </button>
+                </</button>
             </div>
         </header>
 
-        <!-- KPI Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="glass-card p-8 border-t-4 border-[#8D6E63] flex flex-col justify-between">
                 <div>
@@ -150,15 +146,13 @@
                 <p class="text-[10px] text-[#A1887F] mt-4">รวมทุกสถานะการชำระเงิน</p>
             </div>
             <div class="glass-card p-8 border-t-4 border-[#D7C1A7] bg-gradient-to-br from-white to-[#FDFBF7]">
-                <p class="text-xs font-bold text-[#A1887F] uppercase tracking-widest mb-2">สินค้าขายดีอันดับ 1</p>
+                <p class="text-xs font-bold text-[#A1887F] uppercase tracking-widest mb-2">สินค้าขายดีอันดับ 1 (รวมตัวเลือก)</p>
                 <h2 id="top-product" class="text-xl font-bold text-[#5D4037] leading-tight mt-1">-</h2>
                 <div id="top-product-qty" class="text-sm text-[#8D6E63] font-medium mt-2"></div>
             </div>
         </div>
 
-        <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <!-- Chart Section -->
             <div class="lg:col-span-2">
                 <div class="glass-card p-8 h-full">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -173,17 +167,16 @@
                 </div>
             </div>
 
-            <!-- Best Seller Column -->
             <div class="glass-card p-8 overflow-hidden h-full max-h-[560px] flex flex-col">
                 <div class="mb-6">
                     <h3 class="text-xl font-semibold text-[#5D4037]">อันดับสินค้าขายดี</h3>
-                    <p class="text-xs text-[#A1887F] mt-1">เรียงตามจำนวนที่ขายได้</p>
+                    <p class="text-xs text-[#A1887F] mt-1">แยกตามเมนูและตัวเลือกเสริมอย่างละเอียด</p>
                 </div>
                 <div class="overflow-y-auto pr-2 flex-1">
                     <table class="w-full text-left border-collapse">
                         <thead class="text-[#A1887F] text-[10px] uppercase tracking-tighter border-b border-[#F5EDE3] sticky top-0 bg-white/95 z-10">
                             <tr>
-                                <th class="pb-3 font-black">เมนูอาหาร</th>
+                                <th class="pb-3 font-black">เมนูอาหาร / ตัวเลือกเสริม</th>
                                 <th class="pb-3 text-right font-black">จำนวน</th>
                             </tr>
                         </thead>
@@ -195,7 +188,7 @@
             </div>
         </div>
         
-        
+    </div>
 
     <script>
         const sheetId = '1Z-AAhemLhQkRfhssTciWhJCZyVYg3I2hccl19Co5RGE';
@@ -336,25 +329,25 @@
                 
                 chartDataMap[dateLabel] = (chartDataMap[dateLabel] || 0) + price;
 
-                // Product Analysis
+                // Product Analysis (จุดที่แก้ไข Logic เพื่อแยกรายละเอียดทอปปิ้ง/ตัวเลือกพิเศษ)
                 const rawItems = String(row[itemKey] || "");
-                // แยกด้วยบรรทัดใหม่ หรือ คอมมา
                 const items = rawItems.split(/[\n\r,]+/);
                 
                 items.forEach(item => {
                     let clean = item.trim();
                     if (!clean || clean.startsWith('{') || clean.includes('"id":')) return;
 
-                    // ดึงชื่อสินค้า (มักอยู่หน้าวงเล็บ หรือหน้าจำนวน)
-                    let name = clean.split('(')[0].split(' x ')[0].trim();
                     let qty = 1;
-
-                    // ตรวจหาจำนวนในรูปแบบ (2 x ...) หรือ (2)
-                    const qtyMatch = clean.match(/\(\s*(\d+)\s*[xX*]/) || clean.match(/\(\s*(\d+)\s*\)/);
+                    // ตรวจหาจำนวนในรูปแบบ (2 x ...) หรือ (2) หรือ x 2
+                    const qtyMatch = clean.match(/\(\s*(\d+)\s*[xX*]/) || clean.match(/\(\s*(\d+)\s*\)/) || clean.match(/x\s*(\d+)/i);
                     if (qtyMatch) qty = parseInt(qtyMatch[1]);
 
-                    if (name.length > 1) {
-                        productCounts[name] = (productCounts[name] || 0) + qty;
+                    // ดึงชื่อสินค้าแบบเต็มๆ รวมตัวเลือกในวงเล็บด้วย (ตัดแค่ส่วน x จำนวน ด้านหลังออกถ้ามี)
+                    let fullName = clean.split(' x ')[0].trim();
+                    
+                    // หากชื่อยาวเกินไปหรือจัดรูปแบบแปลกๆ ให้ทำความสะอาดเบื้องต้น
+                    if (fullName.length > 1) {
+                        productCounts[fullName] = (productCounts[fullName] || 0) + qty;
                     }
                 });
             });
@@ -366,7 +359,7 @@
             const sortedProducts = Object.entries(productCounts).sort((a,b) => b[1] - a[1]);
             const topOne = sortedProducts[0];
             document.getElementById('top-product').innerText = topOne ? topOne[0] : '-';
-            document.getElementById('top-product-qty').innerText = topOne ? `ขายได้แล้ว ${topOne[1]} กล่อง` : '';
+            document.getElementById('top-product-qty').innerText = topOne ? `ขายได้แล้ว ${topOne[1]} กล่อง/ชิ้น` : '';
 
             // Update Product List
             const tbody = document.getElementById('product-list');
@@ -375,8 +368,12 @@
             sortedProducts.forEach(([name, count]) => {
                 const row = document.createElement('tr');
                 row.className = "border-b border-[#F5EDE3] hover:bg-[#F5EDE3]/30 transition-colors group";
+                
+                // ตกแต่งส่วนที่เป็นวงเล็บ (เช่น เพิ่มไข่ต้ม, พิเศษ) ให้เป็นสีจางลงเพื่อให้อ่านง่าย
+                let formattedName = name.replace(/\(([^)]+)\)/g, '<span class="text-xs text-[#A1887F] block md:inline md:ml-1">($1)</span>');
+
                 row.innerHTML = `
-                    <td class="py-4 font-medium text-[#5D4037] group-hover:pl-1 transition-all">${name}</td>
+                    <td class="py-4 font-medium text-[#5D4037] group-hover:pl-1 transition-all">${formattedName}</td>
                     <td class="py-4 text-right font-bold text-[#8D6E63]">${count.toLocaleString()}</td>
                 `;
                 tbody.appendChild(row);
