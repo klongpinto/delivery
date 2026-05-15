@@ -148,14 +148,14 @@
                 <label class="block text-xs font-semibold uppercase tracking-widest mb-2 ml-4 text-gray-400">ชื่อผู้ใช้งาน</label>
                 <input type="text" id="username" required 
                        class="form-input text-base" 
-                       placeholder="Username (admin)">
+                       placeholder="Username">
             </div>
 
             <div class="text-left">
                 <label class="block text-xs font-semibold uppercase tracking-widest mb-2 ml-4 text-gray-400">รหัสผ่าน</label>
                 <input type="password" id="password" required 
                        class="form-input text-base" 
-                       placeholder="Password (1234)">
+                       placeholder="Password">
             </div>
 
             <div id="errorMessage">ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง</div>
@@ -220,7 +220,7 @@
             const successMsg = document.getElementById('successMessage');
 
             // ตรวจสอบข้อมูลเบื้องต้น
-            if (usernameInput === 'admin' && passwordInput === '1234') {
+            if (usernameInput === 'admin' && passwordInput === 'admin') {
                 errorMsg.style.display = 'none';
                 
                 // 1. เริ่มแสดงสถานะกำลังโหลด
