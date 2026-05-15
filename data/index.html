@@ -322,14 +322,13 @@
                 const price = parseFloat(String(row[priceKey] || "0").replace(/[^0-9.-]+/g, "")) || 0;
                 totalSum += price;
 
-                // Time Grouping for Chart
                 let dateLabel = currentView === 'daily' 
                     ? orderDate.toLocaleDateString('en-CA') 
                     : `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
                 
                 chartDataMap[dateLabel] = (chartDataMap[dateLabel] || 0) + price;
 
-                // Product Analysis (จุดที่แก้ไข Logic เพื่อแยกรายละเอียดทอปปิ้ง/ตัวเลือกพิเศษ)
+                // วนลูปวิเคราะห์รายการสินค้า
                 const rawItems = String(row[itemKey] || "");
                 const items = rawItems.split(/[\n\r,]+/);
                 
@@ -338,14 +337,22 @@
                     if (!clean || clean.startsWith('{') || clean.includes('"id":')) return;
 
                     let qty = 1;
-                    // ตรวจหาจำนวนในรูปแบบ (2 x ...) หรือ (2) หรือ x 2
+                    // 1. หาจำนวนสินค้าจากรูปแบบต่างๆ (เช่น (2 x ...), (2), x 2)
                     const qtyMatch = clean.match(/\(\s*(\d+)\s*[xX*]/) || clean.match(/\(\s*(\d+)\s*\)/) || clean.match(/x\s*(\d+)/i);
                     if (qtyMatch) qty = parseInt(qtyMatch[1]);
 
-                    // ดึงชื่อสินค้าแบบเต็มๆ รวมตัวเลือกในวงเล็บด้วย (ตัดแค่ส่วน x จำนวน ด้านหลังออกถ้ามี)
+                    // 2. ดึงข้อความข้างหน้าออกมาก่อน
                     let fullName = clean.split(' x ')[0].trim();
                     
-                    // หากชื่อยาวเกินไปหรือจัดรูปแบบแปลกๆ ให้ทำความสะอาดเบื้องต้น
+                    // [จุดที่เพิ่มเข้าไปแก้ไข] 
+                    // ลบวงเล็บที่เป็นตัวเลขโดดๆ ที่อยู่ท้ายประโยคออก เช่น " (2" หรือ " (1" 
+                    fullName = fullName.replace(/\s*\(\s*\d+\s*$/, '').trim();
+                    
+                    // ลบวงเล็บเปิดที่อาจจะค้างอยู่กรณีโดนตัดคำผิดพลาด
+                    if (fullName.endsWith('(')) {
+                        fullName = fullName.slice(0, -1).trim();
+                    }
+
                     if (fullName.length > 1) {
                         productCounts[fullName] = (productCounts[fullName] || 0) + qty;
                     }
@@ -369,7 +376,6 @@
                 const row = document.createElement('tr');
                 row.className = "border-b border-[#F5EDE3] hover:bg-[#F5EDE3]/30 transition-colors group";
                 
-                // ตกแต่งส่วนที่เป็นวงเล็บ (เช่น เพิ่มไข่ต้ม, พิเศษ) ให้เป็นสีจางลงเพื่อให้อ่านง่าย
                 let formattedName = name.replace(/\(([^)]+)\)/g, '<span class="text-xs text-[#A1887F] block md:inline md:ml-1">($1)</span>');
 
                 row.innerHTML = `
