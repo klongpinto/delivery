@@ -311,7 +311,8 @@
 
             let filteredOrders = 0;
             let totalSum = 0;
-            const productCounts = {};
+            const productCounts = {};     // สำหรับตารางด้านล่าง (แยกทอปปิ้งละเอียด)
+            const mainProductCounts = {}; // [เพิ่มเข้ามา] สำหรับการ์ด KPI ด้านบน (นับรวมเมนูหลัก)
             const chartDataMap = {};
 
             rawData.forEach(row => {
@@ -328,7 +329,6 @@
                 
                 chartDataMap[dateLabel] = (chartDataMap[dateLabel] || 0) + price;
 
-                // วนลูปวิเคราะห์รายการสินค้า
                 const rawItems = String(row[itemKey] || "");
                 const items = rawItems.split(/[\n\r,]+/);
                 
@@ -337,24 +337,24 @@
                     if (!clean || clean.startsWith('{') || clean.includes('"id":')) return;
 
                     let qty = 1;
-                    // 1. หาจำนวนสินค้าจากรูปแบบต่างๆ (เช่น (2 x ...), (2), x 2)
                     const qtyMatch = clean.match(/\(\s*(\d+)\s*[xX*]/) || clean.match(/\(\s*(\d+)\s*\)/) || clean.match(/x\s*(\d+)/i);
                     if (qtyMatch) qty = parseInt(qtyMatch[1]);
 
-                    // 2. ดึงข้อความข้างหน้าออกมาก่อน
+                    // 1. สำหรับตารางด้านล่าง: ลบแค่วงเล็บตัวเลขโดดๆ ท้ายประโยคออก
                     let fullName = clean.split(' x ')[0].trim();
-                    
-                    // [จุดที่เพิ่มเข้าไปแก้ไข] 
-                    // ลบวงเล็บที่เป็นตัวเลขโดดๆ ที่อยู่ท้ายประโยคออก เช่น " (2" หรือ " (1" 
                     fullName = fullName.replace(/\s*\(\s*\d+\s*$/, '').trim();
-                    
-                    // ลบวงเล็บเปิดที่อาจจะค้างอยู่กรณีโดนตัดคำผิดพลาด
-                    if (fullName.endsWith('(')) {
-                        fullName = fullName.slice(0, -1).trim();
-                    }
+                    if (fullName.endsWith('(')) fullName = fullName.slice(0, -1).trim();
 
                     if (fullName.length > 1) {
                         productCounts[fullName] = (productCounts[fullName] || 0) + qty;
+                    }
+
+                    // 2. [เพิ่มเข้ามา] สำหรับการ์ด KPI ด้านบน: ตัดคำในวงเล็บทั้งหมดออก เพื่อหาเฉพาะเมนูหลัก
+                    // เช่น "ข้าวหมึกผัดผงกะหรี่ (ไข่เจียว) (2)" -> "ข้าวหมึกผัดผงกะหรี่"
+                    let mainName = fullName.split('(')[0].trim();
+                    
+                    if (mainName.length > 1) {
+                        mainProductCounts[mainName] = (mainProductCounts[mainName] || 0) + qty;
                     }
                 });
             });
@@ -363,12 +363,14 @@
             document.getElementById('total-sales').innerText = `฿${totalSum.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
             document.getElementById('total-orders').innerText = filteredOrders.toLocaleString();
             
-            const sortedProducts = Object.entries(productCounts).sort((a,b) => b[1] - a[1]);
-            const topOne = sortedProducts[0];
+            // [แก้ไขจุดนี้] เปลี่ยนมาใช้ตัวแปร mainProductCounts ในการหาอันดับ 1 ของร้าน
+            const sortedMainProducts = Object.entries(mainProductCounts).sort((a,b) => b[1] - a[1]);
+            const topOne = sortedMainProducts[0];
             document.getElementById('top-product').innerText = topOne ? topOne[0] : '-';
-            document.getElementById('top-product-qty').innerText = topOne ? `ขายได้แล้ว ${topOne[1]} กล่อง/ชิ้น` : '';
+            document.getElementById('top-product-qty').innerText = topOne ? `ขายได้รวมทั้งหมด ${topOne[1]} กล่อง` : '';
 
-            // Update Product List
+            // Update Product List (ตารางด้านล่างยังคงใช้ sortedProducts ที่แยกรายละเอียดเหมือนเดิม)
+            const sortedProducts = Object.entries(productCounts).sort((a,b) => b[1] - a[1]);
             const tbody = document.getElementById('product-list');
             tbody.innerHTML = sortedProducts.length ? '' : '<tr><td colspan="2" class="py-10 text-center text-gray-400 italic">ไม่มีข้อมูลในช่วงนี้</td></tr>';
             
