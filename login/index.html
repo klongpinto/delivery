@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - ร้านกล่องปิ่นโต</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f8f5f0;
+            color: #5d4037;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 3rem;
+            box-shadow: 0 20px 60px -10px rgba(93, 64, 55, 0.1);
+            width: 100%;
+            max-width: 450px;
+            padding: 3.5rem;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #8d4f26;
+            border-radius: 1.25rem;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #6d3d1d;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            background: #a39489;
+            cursor: not-allowed;
+        }
+
+        .form-input {
+            background-color: #fcfaf8;
+            border: 2px solid #f0e9e1;
+            border-radius: 1.25rem;
+            padding: 0.875rem 1.25rem;
+            width: 100%;
+            transition: border-color 0.2s ease;
+            text-align: left;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #8d4f26;
+            background-color: #ffffff;
+        }
+
+        .logo-img {
+            max-width: 160px;
+            height: auto;
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Success State classes */
+        .success-logo {
+            transform: scale(1.6) translateY(25px);
+        }
+
+        .custom-loader {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #successMessage {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        #errorMessage {
+            display: none;
+            color: #d32f2f;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginCard" class="login-card">
+        
+        <!-- Header Section -->
+        <div id="headerArea" class="mb-10">
+            <div class="inline-block mb-6">
+                <img id="logo" src="https://img2.pic.in.th/Klong-Pin-To-37.253-x-20.32-cm.png" 
+                     alt="โลโก้ร้านกล่องปิ่นโต" 
+                     class="logo-img"
+                     onerror="this.src='https://via.placeholder.com/160x80?text=Logo'">
+            </div>
+            
+            <div id="infoArea">
+                <div class="space-y-1">
+                    <p id="dateTimeDisplay" class="text-gray-400 text-sm font-light">กำลังโหลดเวลา...</p>
+                    <div class="h-1 w-8 bg-[#8d4f26] mx-auto rounded-full opacity-10 mt-4"></div>
+                </div>
+            </div>
+
+            <!-- Success Message (Hidden by default) -->
+            <div id="successMessage" class="mt-12">
+                <h2 class="text-2xl font-bold text-[#8d4f26]">เข้าสู่ระบบสำเร็จ</h2>
+                <p class="text-gray-500 mt-2">กำลังพาท่านเข้าสู่หน้าจัดการร้าน...</p>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <form id="loginForm" class="space-y-5">
+            <div class="text-left">
+                <label class="block text-xs font-semibold uppercase tracking-widest mb-2 ml-4 text-gray-400">ชื่อผู้ใช้งาน</label>
+                <input type="text" id="username" required 
+                       class="form-input text-base" 
+                       placeholder="Username (admin)">
+            </div>
+
+            <div class="text-left">
+                <label class="block text-xs font-semibold uppercase tracking-widest mb-2 ml-4 text-gray-400">รหัสผ่าน</label>
+                <input type="password" id="password" required 
+                       class="form-input text-base" 
+                       placeholder="Password (1234)">
+            </div>
+
+            <div id="errorMessage">ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง</div>
+
+            <div class="flex items-center justify-between px-2 text-sm">
+                <label class="flex items-center cursor-pointer group">
+                    <input type="checkbox" class="w-4 h-4 rounded border-gray-300 text-[#8d4f26] focus:ring-[#8d4f26]">
+                    <span class="ml-2 text-gray-500">จดจำฉันไว้</span>
+                </label>
+                <a href="#" class="font-medium text-[#8d4f26] hover:underline">ลืมรหัสผ่าน?</a>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-primary mt-4">
+                <span id="btnText">เข้าสู่ระบบ</span>
+                <span id="loader" class="custom-loader"></span>
+            </button>
+        </form>
+
+        <div id="footerArea" class="mt-10 border-t border-gray-50 pt-8">
+            <p class="text-[10px] text-gray-300 uppercase tracking-[0.2em]">Restaurant Management System</p>
+        </div>
+    </div>
+
+    <script>
+        // ฟังก์ชันอัปเดตเวลาปัจจุบัน
+        function updateTime() {
+            const now = new Date();
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('th-TH', options);
+            const timeStr = now.toLocaleTimeString('th-TH', { hour12: false });
+            const displayDate = dateStr.replace(/256[0-9]/, '2569'); 
+            const display = document.getElementById('dateTimeDisplay');
+            if (display) display.innerText = `${displayDate} | ${timeStr}`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        window.onload = () => {
+            gsap.from("#loginCard", {
+                duration: 0.8,
+                y: 20,
+                opacity: 0,
+                ease: "power2.out"
+            });
+        };
+
+        // ฟังก์ชันหลักเมื่อกดปุ่มเข้าสู่ระบบ
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMessage');
+            
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const loader = document.getElementById('loader');
+            const logo = document.getElementById('logo');
+            const loginForm = document.getElementById('loginForm');
+            const infoArea = document.getElementById('infoArea');
+            const footerArea = document.getElementById('footerArea');
+            const successMsg = document.getElementById('successMessage');
+
+            // ตรวจสอบข้อมูลเบื้องต้น
+            if (usernameInput === 'admin' && passwordInput === '1234') {
+                errorMsg.style.display = 'none';
+                
+                // 1. เริ่มแสดงสถานะกำลังโหลด
+                btn.disabled = true;
+                btnText.style.display = 'none';
+                loader.style.display = 'block';
+
+                // 2. จำลองการหน่วงเวลาตรวจสอบ
+                setTimeout(() => {
+                    gsap.to([loginForm, infoArea, footerArea], {
+                        duration: 0.4,
+                        opacity: 0,
+                        y: -10,
+                        stagger: 0.1,
+                        onComplete: () => {
+                            loginForm.style.display = 'none';
+                            infoArea.style.display = 'none';
+                            footerArea.style.display = 'none';
+                            
+                            // 3. แสดงแอนิเมชันความสำเร็จ
+                            showSuccessState();
+                        }
+                    });
+                }, 800);
+            } else {
+                // กรณีรหัสผ่านผิด
+                errorMsg.style.display = 'block';
+                gsap.from(errorMsg, { duration: 0.4, x: 10, ease: "bounce.out" });
+            }
+
+            function showSuccessState() {
+                // ขยายโลโก้ให้เด่นขึ้น
+                logo.classList.add('success-logo');
+                
+                // แสดงข้อความสำเร็จ
+                successMsg.style.display = 'block';
+                gsap.to(successMsg, {
+                    duration: 0.6,
+                    opacity: 1,
+                    y: 0,
+                    ease: "power2.out",
+                    delay: 0.2
+                });
+
+                // 4. ลิงก์ไปหน้าจัดการที่ระบุ
+                setTimeout(() => {
+                    window.location.href = 'https://klongpinto.github.io/delivery/'; 
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>
